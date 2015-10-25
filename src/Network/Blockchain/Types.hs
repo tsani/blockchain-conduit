@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Network.Blockchain.Types where
 
@@ -11,8 +12,10 @@ import Data.Time.Format
 import Data.Text.Encoding (encodeUtf8)
 import Data.Ratio
 
+-- | A wrapper around UTCTime providing a FromJSON instance that parses a
+-- Unix timestamp.
 newtype BTCTime = BTCTime { btcTime :: UTCTime }
-    deriving Show
+    deriving (Eq, Ord, Show)
 
 timefmt = "%s"
 timeParse = parseTimeM True defaultTimeLocale timefmt
@@ -69,6 +72,15 @@ data TxOutput = TxOutput
     }
     deriving (Show)
 
+data Chart a b = Chart
+    { chartValues :: [ChartPoint a b]
+    }
+
+data ChartPoint a b = ChartPoint
+    { chartX :: a
+    , chartY :: b
+    }
+
 instance FromJSON ByteString where
     parseJSON (String s) = pure $ encodeUtf8 s
 
@@ -120,3 +132,14 @@ instance FromJSON TxOutput where
         <*> v .: "addr"
         <*> v .: "n"
         <*> v .: "script"
+
+instance (FromJSON a, FromJSON b) => FromJSON (Chart a b) where
+    parseJSON (Object v) =
+        Chart
+        <$> v .: "values"
+
+instance (FromJSON a, FromJSON b) => FromJSON (ChartPoint a b) where
+    parseJSON (Object v) =
+        ChartPoint
+        <$> v .: "x"
+        <*> v .: "y"
