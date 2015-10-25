@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
 module Network.Blockchain
 ( module Network.Blockchain.Types
@@ -22,6 +23,8 @@ data ChartType :: * -> * -> * where
     MarketPrice :: ChartType BTCTime Double
     -- TODO add other constructors
 
+deriving instance (Show a, Show b) => Show (ChartType a b)
+
 data ChartRange
     = Days30
     | Days60
@@ -29,6 +32,7 @@ data ChartRange
     | Years1
     | Years2
     | AllTime
+    deriving (Show)
 
 -- | Convert a chart range into a ByteString usable as part of a URL for a
 -- Blockchain.info API resource.

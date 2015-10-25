@@ -75,11 +75,13 @@ data TxOutput = TxOutput
 data Chart a b = Chart
     { chartValues :: [ChartPoint a b]
     }
+    deriving (Show)
 
 data ChartPoint a b = ChartPoint
     { chartX :: a
     , chartY :: b
     }
+    deriving (Show)
 
 instance FromJSON ByteString where
     parseJSON (String s) = pure $ encodeUtf8 s
