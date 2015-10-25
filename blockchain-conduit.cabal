@@ -12,11 +12,13 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 library
-  exposed-modules: Network.Blockchain
+  exposed-modules:
+    Network.Blockchain,
+    Network.Blockchain.Types
   -- other-modules:
   -- other-extensions:
   build-depends:
-    base >=4.7 && <4.8,
+    base >=4.7 && <4.9,
     aeson >=0.10.0 && <1.0,
     time >=1.5 && <1.6,
     http-conduit >=2.1 && <2.2,
