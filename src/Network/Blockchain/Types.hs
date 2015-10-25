@@ -7,14 +7,25 @@ import Data.Aeson
 import Data.ByteString (ByteString())
 import qualified Data.ByteString as BS
 import Data.Time.Clock
+import Data.Time.Format
 import Data.Text.Encoding (encodeUtf8)
+import Data.Ratio
+
+newtype BTCTime = BTCTime { btcTime :: UTCTime }
+    deriving Show
+
+timefmt = "%s"
+timeParse = parseTimeM True defaultTimeLocale timefmt
+
+instance FromJSON BTCTime where
+    parseJSON (Number n) = BTCTime <$> timeParse (show (numerator $ toRational n))
 
 data Block = Block
     { blkHash :: ByteString
     , blkVersion :: Int
     , blkPrevious :: ByteString
     , blkMerkleRoot :: ByteString
-    , blkTime :: UTCTime
+    , blkTime :: BTCTime
     , blkBits :: Int
     , blkNonce :: Int
     , blkTxCount :: Int
@@ -22,8 +33,6 @@ data Block = Block
     , blkBlockIndex :: Int
     , blkMainChain :: Bool
     , blkHeight :: Int
-    , blkReceivedTime :: UTCTime
-    , blkRelayedBy :: ByteString
     , blkTransactions :: [Transaction]
     }
     deriving (Show)
@@ -33,12 +42,10 @@ data Transaction = Transaction
     , txVer :: Int
     , txIn :: Int
     , txOut :: Int
-    , txLockTime :: UTCTime
+    , txLockTime :: BTCTime
     , txSize :: Int
     , txRelayedBy :: ByteString
-    , txDoubleSpend :: Bool
-    , txTime :: UTCTime
-    , txBlockHeight :: Int
+    , txTime :: BTCTime
     , txIndex :: Int
     , txInputs :: [TxInput]
     , txOutputs :: [TxOutput]
@@ -47,7 +54,7 @@ data Transaction = Transaction
 
 data TxInput = TxInput
     { txinSequence :: Int
-    , txinPrevOut :: TxOutput
+    -- , txinPrevOut :: TxOutput
     , txinScript :: ByteString
     }
     deriving (Show)
@@ -80,8 +87,6 @@ instance FromJSON Block where
         <*> v .: "block_index"
         <*> v .: "main_chain"
         <*> v .: "height"
-        <*> v .: "received_time"
-        <*> v .: "relayed_by"
         <*> v .: "tx"
 
 instance FromJSON Transaction where
@@ -94,9 +99,7 @@ instance FromJSON Transaction where
         <*> v .: "lock_time"
         <*> v .: "size"
         <*> v .: "relayed_by"
-        <*> v .: "double_spend"
         <*> v .: "time"
-        <*> v .: "block_height"
         <*> v .: "tx_index"
         <*> v .: "inputs"
         <*> v .: "out"
@@ -105,7 +108,7 @@ instance FromJSON TxInput where
     parseJSON (Object v) =
         TxInput
         <$> v .: "sequence"
-        <*> v .: "prev_out"
+        -- <*> v .: "prev_out"
         <*> v .: "script"
 
 instance FromJSON TxOutput where
